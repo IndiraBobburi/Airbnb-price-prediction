@@ -65,7 +65,7 @@ def handle_data():
     final.append(arrayData)
     imouto = obj.prediction()
     val = imouto.predictResult(final)
-    return 123;  
+    return render_template("result.html", answer = val);  
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=False, threaded=True)
