@@ -80,11 +80,14 @@ class prediction(object):
         # print(X[-2:-1])
         return model.predict([X[-1]])[0]
 
+
     def predictResult(self, data):
         inputData = []
         # for col in self.cols:
         #     inputData.append(data[col])
-
+        print("preprocessing start with")
+        print(data);
+        inp = data;
         inp = [['0', 'Roslindale', 1.0, 'House', 'Entire home/apt', 'Sunny Bungalow in the City', 'Cozy, sunny, family home.  Master bedroom high ceilings. Deck, garden with hens, beehives & play structure.   Short walk to charming village with  attractive stores, groceries & local restaurants. Friendly neighborhood. Access public transportation.','{TV,"Wireless Internet",Kitchen,"Free Parking on Premises","Pets live on this property",Dog(s),Heating,"Family/Kid Friendly",Washer,Dryer,"Smoke Detector","Fire Extinguisher",Essentials,Shampoo,"Laptop Friendly Workspace"}', 42.28261879577949, -71.13306792912681, 0, 'f', 2]]
         inp = pd.DataFrame(inp, columns = self.columns_to_keep)
 
