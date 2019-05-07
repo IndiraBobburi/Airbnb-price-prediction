@@ -17,9 +17,11 @@ class prediction(object):
     #drop data missing and data not found rows
     def preprocess(self, input):
         #initialize with original data every time
-        self.train = self.original_data
+        self.train = self.original_data.copy()
+        input = pd.DataFrame(input, columns = self.columns_to_keep)
 
-        self.train.append(input, ignore_index=True)
+        self.train = self.train.append(input, ignore_index=True)
+
         self.train["bedrooms"] = self.train["bedrooms"].fillna(0.5) #these are studios
         self.train["summary"] = self.train["summary"].fillna("")
         #train["bedrooms"] = train["bedrooms"].astype("str")
@@ -29,8 +31,8 @@ class prediction(object):
         self.train.loc[~self.train.property_type.isin(popular_types), "property_type"] = "Other"
 
         #make price numeric:
-        if self.first:
-            self.train["price"] = self.train["price"].str.replace("[$,]", "").astype("float")
+        #if self.first:
+        self.train["price"] = self.train["price"].str.replace("[$,]", "").astype("float")
         #eliminate crazy prices:
         self.train = self.train[self.train["price"] < 600]
 
@@ -58,7 +60,6 @@ class prediction(object):
 
         #this is all of them:
         self.X_full = np.hstack((self.X_num, amenity_ohe, X_text.toarray()))
-        self.first = False
         
         return
 
@@ -77,7 +78,7 @@ class prediction(object):
         Y_train = y[:-1]
         
         model.fit(X_train, Y_train)
-        # print(X[-2:-1])
+        print(X[-1])
         return model.predict([X[-1]])[0]
 
 
@@ -86,11 +87,9 @@ class prediction(object):
         # for col in self.cols:
         #     inputData.append(data[col])
         print("preprocessing start with")
-        print(data);
-        inp = [];
-        #inp = [['0', 'Roslindale', 1.0, 'House', 'Entire home/apt', 'Sunny Bungalow in the City', 'Cozy, sunny, family home.  Master bedroom high ceilings. Deck, garden with hens, beehives & play structure.   Short walk to charming village with  attractive stores, groceries & local restaurants. Friendly neighborhood. Access public transportation.','{TV,"Wireless Internet",Kitchen,"Free Parking on Premises","Pets live on this property",Dog(s),Heating,"Family/Kid Friendly",Washer,Dryer,"Smoke Detector","Fire Extinguisher",Essentials,Shampoo,"Laptop Friendly Workspace"}', 42.28261879577949, -71.13306792912681, 0, 'f', 2]]
-        inp = pd.DataFrame(inp, columns = self.columns_to_keep)
-
+        #print(data);
+        inp = data
+        print(inp)
         self.preprocess(inp)
         print("preprocessing done")
 
@@ -112,9 +111,11 @@ class prediction(object):
                    "require_guest_phone_verification", "minimum_nights"]
 
         self.original_data = self.original_data[self.columns_to_keep]
-        self.first = True
 
+# inp = [['0', 'Roslindale', 2.0, 'House', 'Entire home/apt', 'Sunny Bungalow in the City', 'Cozy, sunny, family home.  Master bedroom high ceilings. Deck, garden with hens, beehives & play structure.   Short walk to charming village with  attractive stores, groceries & local restaurants. Friendly neighborhood. Access public transportation.','{TV,"Wireless Internet",Kitchen,"Free Parking on Premises","Pets live on this property",Dog(s),Heating,"Family/Kid Friendly",Washer,Dryer,"Smoke Detector","Fire Extinguisher",Essentials,Shampoo,"Laptop Friendly Workspace"}', 42.28261879577949, -71.13306792912681, 0, 'f', 2]]
 # obj = prediction()
-# obj.predictResult([''])
+# obj.predictResult(inp)
+
+# inp = [['0', 'Roslindale', 1.0, 'House', 'Entire home/apt', 'Sunny Bungalow in the City', 'Cozy, sunny, family home.  Master bedroom high ceilings. Deck, garden with hens, beehives & play structure.   Short walk to charming village with  attractive stores, groceries & local restaurants. Friendly neighborhood. Access public transportation.','{TV,"Wireless Internet",Kitchen,"Free Parking on Premises","Pets live on this property",Dog(s),Heating,"Family/Kid Friendly",Washer,Dryer,"Smoke Detector","Fire Extinguisher",Essentials,Shampoo,"Laptop Friendly Workspace"}', 40.28261879577949, -70.13306792912681, 0, 'f', 2]]
 # print("calling second time")
-# obj.predictResult([''])
+# obj.predictResult(inp)
