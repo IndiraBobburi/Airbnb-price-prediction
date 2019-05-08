@@ -18,7 +18,7 @@ class prediction(object):
     def preprocess(self, input):
         #initialize with original data every time
         self.train = self.original_data.copy()
-        input = pd.DataFrame(input, columns = self.columns_to_keep)
+        input = pd.DataFrame(input, columns = self.cols)
 
         self.train = self.train.append(input, ignore_index=True)
 
@@ -27,39 +27,37 @@ class prediction(object):
         #train["bedrooms"] = train["bedrooms"].astype("str")
 
         #replace unpopular types with other 
-        popular_types = self.train["property_type"].value_counts().head(6).index.values
-        self.train.loc[~self.train.property_type.isin(popular_types), "property_type"] = "Other"
+        property_type = self.train["property_type"].value_counts().head(6).index.values
+        self.train.loc[~self.train.property_type.isin(property_type), "property_type"] = "Other"
 
         #make price numeric:
         #if self.first:
         self.train["price"] = self.train["price"].str.replace("[$,]", "").astype("float")
         #eliminate crazy prices:
         self.train = self.train[self.train["price"] < 600]
-
-
-
+ 
         self.y = self.train["price"]
-        train_num_cat = self.train[["neighbourhood_cleansed", "bedrooms",
+        train_basic = self.train[["neighbourhood_cleansed", "bedrooms",
                            "property_type", "room_type", "latitude", "longitude",
                            "number_of_reviews", "require_guest_phone_verification",
                             "minimum_nights"]]
 
         train_text = self.train[["name", "summary", "amenities"]]
 
-        self.X_num = pd.get_dummies(train_num_cat)
+        self.X_basic = pd.get_dummies(train_basic)
 
         self.train.amenities = self.train.amenities.str.replace("[{}]", "")
-        amenity_ohe = self.train.amenities.str.get_dummies(sep = ",")
+        amenities_one_hot_encoding = self.train.amenities.str.get_dummies(sep = ",")
 
         self.train["text"] = self.train["name"].str.cat(self.train["summary"], sep = " ")
         vect = CountVectorizer(stop_words = "english", min_df = 10)
         X_text = vect.fit_transform(self.train["text"])
 
         #this is numeric + amenities:
-        self.X = np.hstack((self.X_num, amenity_ohe))
+        self.X = np.hstack((self.X_basic, amenities_one_hot_encoding))
 
         #this is all of them:
-        self.X_full = np.hstack((self.X_num, amenity_ohe, X_text.toarray()))
+        self.X_whole = np.hstack((self.X_basic, amenities_one_hot_encoding, X_text.toarray()))
         
         return
 
@@ -105,12 +103,12 @@ class prediction(object):
         self.original_data = pd.read_csv("input/listings.csv")
         print("file reading done")
 
-        self.columns_to_keep = ["price", "neighbourhood_cleansed", "bedrooms",
+        self.cols = ["price", "neighbourhood_cleansed", "bedrooms",
                    "property_type", "room_type", "name", "summary",
                    "amenities", "latitude", "longitude", "number_of_reviews",
                    "require_guest_phone_verification", "minimum_nights"]
 
-        self.original_data = self.original_data[self.columns_to_keep]
+        self.original_data = self.original_data[self.cols]
 
 # inp = [['0', 'Roslindale', 2.0, 'House', 'Entire home/apt', 'Sunny Bungalow in the City', 'Cozy, sunny, family home.  Master bedroom high ceilings. Deck, garden with hens, beehives & play structure.   Short walk to charming village with  attractive stores, groceries & local restaurants. Friendly neighborhood. Access public transportation.','{TV,"Wireless Internet",Kitchen,"Free Parking on Premises","Pets live on this property",Dog(s),Heating,"Family/Kid Friendly",Washer,Dryer,"Smoke Detector","Fire Extinguisher",Essentials,Shampoo,"Laptop Friendly Workspace"}', 42.28261879577949, -71.13306792912681, 0, 'f', 2]]
 # obj = prediction()
